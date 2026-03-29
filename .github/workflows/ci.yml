@@ -1,0 +1,95 @@
+name: CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+
+jobs:
+  formatting:
+    name: Check formatting
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install clang-format
+        run: sudo apt-get install -y clang-format
+      
+      - name: Check formatting
+        run: |
+          find include/ src/ tests/ -name "*.c" -exec clang-format --dry-run --Werror {} \;
+          find include/ src/ tests/ -name "*.h" -exec clang-format --dry-run --Werror {} \;
+        continue-on-error: false
+
+
+  debug-build:
+    name: Debug build and tests
+    runs-on: ubuntu-latest
+    needs: formatting
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Cache GraphBLAS source
+        uses: actions/cache@v4
+        with:
+          path: GraphBLAS/
+          key: graphblas-src-${{ runner.os }}-v1
+          restore-keys: graphblas-src-${{ runner.os }}-
+
+      - name: Cache CMake build
+        uses: actions/cache@v4
+        with:
+          path: build-debug/CMakeFiles
+          key: cmake-${{ runner.os }}-${{ hashFiles('**/CMakeLists.txt', 'src/*.c', 'tests/*.c') }}
+          restore-keys: cmake-${{ runner.os }}-
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends libsuitesparse-dev libcmocka-dev clang-tidy
+      
+      - name: Build and install GraphBLAS
+        run: |
+          if [ -f "/usr/local/lib/libgraphblas.so" ]; then
+            echo "GraphBLAS already installed"
+          elif [ -d "GraphBLAS" ] && [ -f "GraphBLAS/Makefile" ]; then
+            cd GraphBLAS
+            make -j$(nproc)
+            sudo make install
+            sudo ldconfig
+          else
+            git clone --depth 1 https://github.com/DrTimothyAldenDavis/GraphBLAS.git
+            cd GraphBLAS
+            make -j$(nproc)
+            sudo make install
+            sudo ldconfig
+          fi
+
+      - name: Configure Debug
+        run: |
+          mkdir -p build-debug
+          cd build-debug
+          cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_EXPORT_COMPILE_COMMANDS=ON ..
+
+      - name: Run clang-tidy
+        run: |
+          cd build-debug
+          find ../src/ ../tests/ -name "*.c" -exec clang-tidy -p . {} \;
+        continue-on-error: true
+
+      - name: Build
+        run: |
+          cd build-debug
+          make -j$(nproc)
+
+      - name: Run tests
+        run: |
+          cd build-debug
+          ctest --output-on-failure
