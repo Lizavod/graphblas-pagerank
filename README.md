@@ -32,13 +32,13 @@ sudo make install # Установка в систему
 ```
 ### Как использовать
 
-```bash
-gcc main.c -I/usr/local/include -L/usr/local/lib -lpagerank -lgraphblas -lm
-```
-
 ```С 
 #include <pagerank/pagerank.h>
 #include <pagerank/mtx_reader.h>
+```
+
+```bash
+gcc main.c -I/usr/local/include -L/usr/local/lib -lpagerank_lib -lgraphblas -lm
 ```
 
 
