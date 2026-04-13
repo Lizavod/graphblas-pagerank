@@ -47,7 +47,6 @@ add_subdirectory(tests)
 
 install(FILES 
     include/pagerank.h
-    include/mtx_reader.h
     DESTINATION include/pagerank
 )
 

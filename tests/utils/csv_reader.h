@@ -3,8 +3,7 @@
 
 #ifndef MTX_READER_H
 #define MTX_READER_H
-
-#include <GraphBLAS.h>
+#define PRINT_ERROR(...) (fprintf(stderr, __VA_ARGS__))
 
 GrB_Info read_matrix(const char *filename, GrB_Matrix *A);
 
