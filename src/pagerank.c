@@ -50,8 +50,8 @@ GrB_Info pagerank(GrB_Vector *pagerank_scores, int *iters, const GrB_Matrix A,
     GrB_Vector_new(&pagerank_prev, GrB_FP64, num_nodes);
     GrB_Vector_new(&out_degree, GrB_FP64, num_nodes);
     GrB_Vector_new(&inv_degree, GrB_FP64, num_nodes);
-    GrB_Vector_new(&not_dangling, GrB_BOOL, num_nodes);
-    GrB_Vector_new(&is_dangling, GrB_BOOL, num_nodes);
+    GrB_Vector_new(&not_dangling, GrB_FP64, num_nodes);
+    GrB_Vector_new(&is_dangling, GrB_FP64, num_nodes);
     GrB_Vector_new(&dangling_scores, GrB_FP64, num_nodes);
     GrB_Vector_new(&difference, GrB_FP64, num_nodes);
 
@@ -71,18 +71,21 @@ GrB_Info pagerank(GrB_Vector *pagerank_scores, int *iters, const GrB_Matrix A,
     GxB_Vector_subassign_Scalar(*pagerank_scores, NULL, NULL, scalar_initial,
                                 GrB_ALL, num_nodes, NULL);
     GrB_Matrix_reduce_Monoid(out_degree, NULL, NULL, GrB_PLUS_MONOID_FP64, A,
-                             GrB_DESC_T1);
-    GrB_Vector_apply_BinaryOp2nd_Scalar(not_dangling, NULL, NULL, GrB_GT_FP64,
-                                        out_degree, scalar_zero, NULL);
-    GrB_Vector_apply_BinaryOp2nd_Scalar(is_dangling, NULL, NULL, GrB_EQ_FP64,
-                                        out_degree, scalar_zero, NULL);
-    GrB_Vector_apply_BinaryOp1st_Scalar(inv_degree, not_dangling, NULL, rdiv_op,
-                                        scalar_zero, out_degree, NULL);
+                             NULL);
 
+    GrB_Vector_select_Scalar(not_dangling, NULL, NULL, GrB_VALUENE_FP64,
+                             out_degree, scalar_zero, NULL);
+    GxB_Vector_subassign_Scalar(is_dangling, NULL, NULL, scalar_one, GrB_ALL,
+                                num_nodes, NULL);
+    GrB_Vector_select_Scalar(is_dangling, not_dangling, NULL, GrB_VALUEEQ_FP64,
+                             not_dangling, scalar_zero, NULL);
+
+    GrB_Vector_apply_BinaryOp1st_Scalar(inv_degree, not_dangling, NULL, rdiv_op,
+                                        scalar_one, out_degree, NULL);
     GrB_Matrix_diag(&inv_degree_diag, inv_degree, 0);
 
-    GrB_Matrix_eWiseMult_BinaryOp(M, NULL, NULL, GrB_TIMES_FP64, A,
-                                  inv_degree_diag, GrB_DESC_T1);
+    GrB_mxm(M, NULL, NULL, GrB_PLUS_TIMES_SEMIRING_FP64, inv_degree_diag, A,
+            NULL);
 
     GrB_Vector_free(&inv_degree);
     GrB_Vector_free(&out_degree);
@@ -94,6 +97,7 @@ GrB_Info pagerank(GrB_Vector *pagerank_scores, int *iters, const GrB_Matrix A,
     for (int i = 0; i < max_iters; i++) {
         GrB_Vector_assign(dangling_scores, is_dangling, NULL, *pagerank_scores,
                           GrB_ALL, num_nodes, NULL);
+
         GrB_Vector_reduce_Monoid_Scalar(scalar_dangling_mass, NULL,
                                         GrB_PLUS_MONOID_FP64, dangling_scores,
                                         NULL);
@@ -101,13 +105,15 @@ GrB_Info pagerank(GrB_Vector *pagerank_scores, int *iters, const GrB_Matrix A,
         GrB_Scalar_extractElement_FP64(&dangling_mass, scalar_dangling_mass);
         redistributed_mass =
             (damping * dangling_mass + (1.0 - damping)) / num_nodes;
+
         GrB_Scalar_setElement_FP64(scalar_ridist, redistributed_mass);
 
         GrB_mxv(pagerank_prev, NULL, NULL, GrB_PLUS_TIMES_SEMIRING_FP64, M,
-                *pagerank_scores, GrB_DESC_T1);
+                *pagerank_scores, GrB_DESC_T0);
         GrB_Vector_apply_BinaryOp1st_Scalar(pagerank_prev, NULL, NULL,
                                             GrB_TIMES_FP64, scalar_damping,
                                             pagerank_prev, NULL);
+
         GxB_Vector_subassign_Scalar(pagerank_prev, NULL, GrB_PLUS_FP64,
                                     scalar_ridist, GrB_ALL, num_nodes, NULL);
 

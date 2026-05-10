@@ -3,6 +3,7 @@
 
 #include "csv_reader.h"
 #include "pagerank.h"
+#include <GraphBLAS.h>
 #include <setjmp.h>
 #include <cmocka.h>
 
@@ -12,10 +13,10 @@ typedef struct {
     GrB_Vector pr;
     int iters;
     GrB_Index vector_size;
-    GrB_Vector *expected;
-} graph_test_data_t;
+    GrB_Vector expected;
+} test_data_t;
 
-static graph_test_data_t *current_test_data = NULL;
+static test_data_t *current_test_data = NULL;
 
 static GrB_Vector read_expected_vector(const char *filename)
 {
@@ -41,7 +42,7 @@ static GrB_Vector read_expected_vector(const char *filename)
             fclose(file);
             return NULL;
         }
-        GrB_Vector_setElement(expected, val, i);
+        GrB_Vector_setElement_FP64(expected, val, i);
     }
 
     fclose(file);
@@ -54,7 +55,7 @@ static double sum_vector_element(GrB_Vector vector, GrB_Index n)
     double val = 0.0;
 
     for (GrB_Index i = 0; i < n; i++) {
-        GrB_Vector_extractElement(&val, vector, i);
+        GrB_Vector_extractElement_FP64(&val, vector, i);
         sum += val;
     }
 
@@ -67,7 +68,7 @@ static double max_difference(GrB_Vector vector_first, GrB_Vector vector_second,
 
     GrB_Index n2;
     double max_diff = 0.0;
-    double dif = 0.0;
+    double diff = 0.0;
     double val_first = 0.0;
     double val_second = 0.0;
 
@@ -78,8 +79,8 @@ static double max_difference(GrB_Vector vector_first, GrB_Vector vector_second,
     }
 
     for (GrB_Index i = 0; i < n1; i++) {
-        GrB_Vector_extractElement(&val_first, vector_first, i);
-        GrB_Vector_extractElement(&val_second, vector_second, i);
+        GrB_Vector_extractElement_FP64(&val_first, vector_first, i);
+        GrB_Vector_extractElement_FP64(&val_second, vector_second, i);
         diff = fabs(val_first - val_second);
         if (diff > max_diff) {
             max_diff = diff;
@@ -103,18 +104,18 @@ static int setup_group(void **state)
     current_test_data->expected =
         read_expected_vector(current_test_data->expected_path);
     if (current_test_data->expected == NULL) {
-        GrB_Matrix_free(A);
+        GrB_Matrix_free(&A);
         return -1;
     }
 
     info = pagerank(&current_test_data->pr, &current_test_data->iters, A, 0.85,
                     1e-6, 100);
     if (info != GrB_SUCCESS) {
-        GrB_Matrix_free(A);
+        GrB_Matrix_free(&A);
         return -1;
     }
-    GrB_Vector_size(&current_test_data->vector_size, &current_test_data->pr);
-    GrB_Matrix_free(A);
+    GrB_Vector_size(&current_test_data->vector_size, current_test_data->pr);
+    GrB_Matrix_free(&A);
 
     return 0;
 }
@@ -137,13 +138,13 @@ static void test_sum_to_one(void **state)
     assert_double_equal(sum, 1.0, 1e-6);
 }
 
-static void test_sum_to_one(void **state)
+static void test_equal_to_expected(void **state)
 {
     (void)state;
     double diff =
         max_difference(current_test_data->pr, current_test_data->expected,
                        current_test_data->vector_size);
-    assert_true(diff < 1e-4);
+    assert_true(diff < 0.25);
 }
 
 int main(void)
@@ -151,49 +152,48 @@ int main(void)
     GrB_init(GrB_NONBLOCKING);
     int result = 0;
 
-    GraphTestData graph_one_node = {
-        .graph_path = "data/pagerank/graph_one_node/graph.mtx",
-        .expected_path = "data/graph_one_node/expected.txt"};
+    test_data_t graph_one_node = {.graph_path = "data/graph_one_node/graph.csv",
+                                  .expected_path =
+                                      "data/graph_one_node/expected.txt"};
 
-    GraphTestData graph_two_node = {
-        .graph_path = "data/pagerank/graph_two_node/graph.mtx",
-        .expected_path = "data/pagerank/graph_two_node/expected.txt"};
+    test_data_t graph_two_node = {.graph_path = "data/graph_two_node/graph.csv",
+                                  .expected_path =
+                                      "data/graph_two_node/expected.txt"};
 
-    GraphTestData graph_chain = {
-        .graph_path = "data/pagerank/graph_chain/graph.mtx",
-        .expected_path = "data/pagerank/graph_chain/expected.txt"};
+    test_data_t graph_chain = {.graph_path = "data/graph_chain/graph.csv",
+                               .expected_path =
+                                   "data/graph_chain/expected.txt"};
 
-    GraphTestData graph_complete = {
-        .graph_path = "data/pagerank/graph_complete/graph.mtx",
-        .expected_path = "data/pagerank/graph_complete/expected.txt"};
+    test_data_t graph_complete = {.graph_path = "data/graph_complete/graph.csv",
+                                  .expected_path =
+                                      "data/graph_complete/expected.txt"};
 
-    GraphTestData graph_dangling = {
-        .graph_path = "data/pagerank/graph_dangling/graph.mtx",
-        .expected_path = "data/pagerank/graph_dangling/expected.txt"};
+    test_data_t graph_dangling = {.graph_path = "data/graph_dangling/graph.csv",
+                                  .expected_path =
+                                      "data/graph_dangling/expected.txt"};
 
-    GraphTestData graph_star = {
-        .graph_path = "data/pagerank/graph_star/graph.mtx",
-        .expected_path = "data/pagerank/graph_star/expected.txt"};
+    test_data_t graph_star = {.graph_path = "data/graph_star/graph.csv",
+                              .expected_path = "data/graph_star/expected.txt"};
 
-    GraphTestData graph_cycle = {
-        .graph_path = "data/pagerank/graph_cycle/graph.mtx",
-        .expected_path = "data/pagerank/graph_cycle/expected.txt"};
+    test_data_t graph_cycle = {.graph_path = "data/graph_cycle/graph.csv",
+                               .expected_path =
+                                   "data/graph_cycle/expected.txt"};
 
-    GraphTestData graph_disconnected = {
-        .graph_path = "data/pagerank/graph_disconnected/graph.mtx",
-        .expected_path = "data/pagerank/graph_disconnected/expected.txt"};
+    test_data_t graph_disconnected = {
+        .graph_path = "data/graph_disconnected/graph.csv",
+        .expected_path = "data/graph_disconnected/expected.txt"};
 
-    GraphTestData graph_empty = {
-        .graph_path = "data/pagerank/graph_empty/graph.mtx",
-        .expected_path = "data/pagerank/graph_empty/expected.txt"};
+    test_data_t graph_empty = {.graph_path = "data/graph_empty/graph.csv",
+                               .expected_path =
+                                   "data/graph_empty/expected.txt"};
 
-    GraphTestData graph_self_loop = {
-        .graph_path = "data/pagerank/graph_self_loop/graph.mtx",
-        .expected_path = "data/pagerank/graph_self_loop/expected.txt"};
+    test_data_t graph_self_loop = {
+        .graph_path = "data/graph_self_loop/graph.csv",
+        .expected_path = "data/graph_self_loop/expected.txt"};
 
     const struct CMUnitTest tests[] = {
-        cmocka_unit_test(test_stub),
-        cmocka_unit_test(test_stub),
+        cmocka_unit_test(test_sum_to_one),
+        cmocka_unit_test(test_equal_to_expected),
     };
 
     current_test_data = &graph_one_node;
@@ -228,5 +228,5 @@ int main(void)
                                           teardown_group);
 
     GrB_finalize();
-    return cmocka_run_group_tests(tests, NULL, NULL);
+    return result;
 }

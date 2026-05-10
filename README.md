@@ -34,7 +34,6 @@ sudo make install # Установка в систему
 
 ```С 
 #include <pagerank/pagerank.h>
-#include <pagerank/mtx_reader.h>
 ```
 
 ```bash
@@ -46,9 +45,6 @@ gcc main.c -I/usr/local/include -L/usr/local/lib -lpagerank_lib -lgraphblas -lm
 
 ### Вычисление PageRank графа
 `GrB_Info pagerank(GrB_Vector *centrality, int *iters, const GrB_Matrix A, double damping, double tol, int max_iters)`
-
-### Загрузка матрицы из `.mtx` файла
-`GrB_Info read_matrix(const char *filename, GrB_Matrix *A)`
 
 
 ## Лицензия
