@@ -9,7 +9,7 @@ set(TEST_NAMES tests_reader tests_pagerank)
 add_library(csv_reader STATIC utils/csv_reader.c)
 target_include_directories(csv_reader PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/utils
-    ${PROJECT_SOURCE_DIR}/include
+    ${GRAPHBLAS_INCLUDE_DIR}
 )
 
 foreach(test_name ${TEST_NAMES})
