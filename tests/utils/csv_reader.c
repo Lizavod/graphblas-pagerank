@@ -65,7 +65,7 @@ GrB_Info read_matrix(const char *filename, GrB_Matrix *A)
         col_indices[count] = to - 1;
         count++;
     }
-    if (A != NULL) {
+    if (A != NULL && *A != NULL) {
         GrB_Matrix_free(A);
     }
     status = GrB_Matrix_new(A, GrB_FP64, num_nodes, num_nodes);
@@ -76,8 +76,7 @@ GrB_Info read_matrix(const char *filename, GrB_Matrix *A)
         fclose(file);
         return status;
     }
-    status =
-        GxB_Matrix_build_Scalar(*A, row_indices, col_indices, val, num_edges);
+    status = GxB_Matrix_build_Scalar(*A, row_indices, col_indices, val, count);
     if (status != GrB_SUCCESS) {
         PRINT_ERROR("Error: failed to create a matrix\n");
         GrB_Matrix_free(A);

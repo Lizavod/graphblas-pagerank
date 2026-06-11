@@ -1,1 +1,0 @@
-/usr/bin/cc  -Wall -Wextra -Wpedantic -g -g -O0 -fsanitize=address -fsanitize=undefined -fsanitize=leak  -fsanitize=address -fsanitize=undefined -fsanitize=leak CMakeFiles/tests_reader.dir/tests_reader.c.o -o tests_reader  -Wl,-rpath,/usr/local/lib ../src/libpagerank_lib.a libcsv_reader.a /usr/lib/x86_64-linux-gnu/libcmocka.so.0.8.0 /usr/local/lib/libgraphblas.so 

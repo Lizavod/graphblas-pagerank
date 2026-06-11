@@ -93,7 +93,7 @@ static double max_difference(GrB_Vector vector_first, GrB_Vector vector_second,
 static int setup_group(void **state)
 {
     (void)state;
-    GrB_Matrix A;
+    GrB_Matrix A = NULL;
     GrB_Info info;
 
     info = read_matrix(current_test_data->graph_path, &A);
