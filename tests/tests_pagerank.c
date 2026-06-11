@@ -112,6 +112,7 @@ static int setup_group(void **state)
                     1e-6, 100);
     if (info != GrB_SUCCESS) {
         GrB_Matrix_free(&A);
+        GrB_Vector_free(&current_test_data->expected);
         return -1;
     }
     GrB_Vector_size(&current_test_data->vector_size, current_test_data->pr);
@@ -124,8 +125,11 @@ static int teardown_group(void **state)
 {
     (void)state;
 
-    GrB_Vector_free(&current_test_data->pr);
-    current_test_data = NULL;
+    if (current_test_data != NULL) {
+        GrB_Vector_free(&current_test_data->pr);
+        GrB_Vector_free(&current_test_data->expected);
+        current_test_data = NULL;
+    }
 
     return 0;
 }

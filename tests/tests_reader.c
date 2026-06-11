@@ -72,6 +72,7 @@ int main(void)
 
     test_data_t graph_one_node = {
         .filename = "data/graph_one_node/graph.csv",
+        .A = NULL,
         .expected_num_nodes = 1,
         .expected_num_edges = 1,
         .checks = {{0, 0}},
@@ -80,6 +81,7 @@ int main(void)
 
     test_data_t graph_two_node = {
         .filename = "data/graph_two_node/graph.csv",
+        .A = NULL,
         .expected_num_nodes = 2,
         .expected_num_edges = 1,
         .checks = {{0, 1}},
@@ -87,6 +89,7 @@ int main(void)
     };
     test_data_t graph_chain = {
         .filename = "data/graph_chain/graph.csv",
+        .A = NULL,
         .expected_num_nodes = 4,
         .expected_num_edges = 3,
         .checks = {{0, 1}, {1, 2}, {2, 3}},
@@ -94,6 +97,7 @@ int main(void)
     };
     test_data_t graph_star = {
         .filename = "data/graph_star/graph.csv",
+        .A = NULL,
         .expected_num_nodes = 4,
         .expected_num_edges = 3,
         .checks = {{0, 1}, {0, 2}, {0, 3}},

@@ -11,12 +11,12 @@
 
 #define PRINT_ERROR(...) (fprintf(stderr, __VA_ARGS__))
 
-static void free_memory(GrB_Index **I, GrB_Index **J)
+static void free_memory(GrB_Index **row_indices, GrB_Index **col_indices)
 {
-    free(*I);
-    free(*J);
-    *I = NULL;
-    *J = NULL;
+    free(*row_indices);
+    free(*col_indices);
+    *row_indices = NULL;
+    *col_indices = NULL;
 }
 
 GrB_Info read_matrix(const char *filename, GrB_Matrix *A)
@@ -33,32 +33,36 @@ GrB_Info read_matrix(const char *filename, GrB_Matrix *A)
 
     if (!file) {
         PRINT_ERROR("Error: could not open the file %s\n", filename);
+        GrB_Scalar_free(&val);
         return GrB_PANIC;
     }
 
     if (fscanf(file, "%lu,%lu", &num_nodes, &num_edges) != 2) {
         PRINT_ERROR("Error: couldn't read data\n");
+        GrB_Scalar_free(&val);
         fclose(file);
         return GrB_INVALID_VALUE;
     }
 
-    GrB_Index *I = malloc(num_edges * sizeof(GrB_Index));
-    GrB_Index *J = malloc(num_edges * sizeof(GrB_Index));
-    if (!I || !J) {
+    GrB_Index *row_indices = malloc(num_edges * sizeof(GrB_Index));
+    GrB_Index *col_indices = malloc(num_edges * sizeof(GrB_Index));
+    if (!row_indices || !col_indices) {
         PRINT_ERROR("Error: couldn't allocate memory\n");
-        free_memory(&I, &J);
+        free_memory(&row_indices, &col_indices);
+        GrB_Scalar_free(&val);
         return GrB_OUT_OF_MEMORY;
     }
 
     while (fgets(line, MAX_LINE, file)) {
         if (fscanf(file, "%lu,%lu", &from, &to) != 2) {
             PRINT_ERROR("Error: couldn't read data\n");
-            free_memory(&I, &J);
+            free_memory(&row_indices, &col_indices);
+            GrB_Scalar_free(&val);
             fclose(file);
             return GrB_INVALID_VALUE;
         }
-        I[count] = from - 1;
-        J[count] = to - 1;
+        row_indices[count] = from - 1;
+        col_indices[count] = to - 1;
         count++;
     }
     if (A != NULL) {
@@ -67,20 +71,23 @@ GrB_Info read_matrix(const char *filename, GrB_Matrix *A)
     status = GrB_Matrix_new(A, GrB_FP64, num_nodes, num_nodes);
     if (status != GrB_SUCCESS) {
         PRINT_ERROR("Error: failed to create a matrix\n");
-        free_memory(&I, &J);
+        free_memory(&row_indices, &col_indices);
+        GrB_Scalar_free(&val);
         fclose(file);
         return status;
     }
-    status = GxB_Matrix_build_Scalar(*A, I, J, val, num_edges);
+    status =
+        GxB_Matrix_build_Scalar(*A, row_indices, col_indices, val, num_edges);
     if (status != GrB_SUCCESS) {
         PRINT_ERROR("Error: failed to create a matrix\n");
         GrB_Matrix_free(A);
-        free_memory(&I, &J);
+        free_memory(&row_indices, &col_indices);
+        GrB_Scalar_free(&val);
         fclose(file);
         return status;
     }
     GrB_Scalar_free(&val);
-    free_memory(&I, &J);
+    free_memory(&row_indices, &col_indices);
     fclose(file);
     return status;
 }

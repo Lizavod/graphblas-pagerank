@@ -35,6 +35,13 @@ GrB_Info pagerank(GrB_Vector *pagerank_scores, int *iters, const GrB_Matrix A,
     GrB_Vector difference;
 
     GrB_Matrix_nrows(&num_nodes, A);
+    if (pagerank_scores != NULL && *pagerank_scores != NULL) {
+        GrB_Vector_free(pagerank_scores);
+    }
+    if (num_nodes == 0) {
+        return GrB_SUCCESS;
+    }
+
     double initial = 1.0 / num_nodes;
     double current_error = 0.0;
     double redistributed_mass = 0.0;
@@ -50,8 +57,8 @@ GrB_Info pagerank(GrB_Vector *pagerank_scores, int *iters, const GrB_Matrix A,
     GrB_Vector_new(&pagerank_prev, GrB_FP64, num_nodes);
     GrB_Vector_new(&out_degree, GrB_FP64, num_nodes);
     GrB_Vector_new(&inv_degree, GrB_FP64, num_nodes);
-    GrB_Vector_new(&not_dangling, GrB_FP64, num_nodes);
-    GrB_Vector_new(&is_dangling, GrB_FP64, num_nodes);
+    GrB_Vector_new(&not_dangling, GrB_BOOL, num_nodes);
+    GrB_Vector_new(&is_dangling, GrB_BOOL, num_nodes);
     GrB_Vector_new(&dangling_scores, GrB_FP64, num_nodes);
     GrB_Vector_new(&difference, GrB_FP64, num_nodes);
 
@@ -87,6 +94,7 @@ GrB_Info pagerank(GrB_Vector *pagerank_scores, int *iters, const GrB_Matrix A,
     GrB_mxm(M, NULL, NULL, GrB_PLUS_TIMES_SEMIRING_FP64, inv_degree_diag, A,
             NULL);
 
+    GrB_Matrix_free(&inv_degree_diag);
     GrB_Vector_free(&inv_degree);
     GrB_Vector_free(&out_degree);
     GrB_Vector_free(&not_dangling);
@@ -143,6 +151,7 @@ GrB_Info pagerank(GrB_Vector *pagerank_scores, int *iters, const GrB_Matrix A,
     GrB_Scalar_free(&scalar_error);
     GrB_Scalar_free(&scalar_damping);
     GrB_Scalar_free(&scalar_ridist);
+    GrB_BinaryOp_free(&rdiv_op);
 
     return GrB_SUCCESS;
 }
