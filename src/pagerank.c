@@ -51,7 +51,6 @@ GrB_Info pagerank(GrB_Vector *pagerank_scores, int *iters, const GrB_Matrix A,
     GrB_BinaryOp_new(&rdiv_op, rdiv, GrB_FP64, GrB_FP64, GrB_FP64);
 
     GrB_Matrix_new(&M, GrB_FP64, num_nodes, num_nodes);
-    GrB_Matrix_new(&inv_degree_diag, GrB_FP64, num_nodes, num_nodes);
 
     GrB_Vector_new(pagerank_scores, GrB_FP64, num_nodes);
     GrB_Vector_new(&pagerank_prev, GrB_FP64, num_nodes);
@@ -132,8 +131,8 @@ GrB_Info pagerank(GrB_Vector *pagerank_scores, int *iters, const GrB_Matrix A,
         GrB_Vector_reduce_Monoid_Scalar(scalar_error, NULL,
                                         GrB_PLUS_MONOID_FP64, difference, NULL);
         GrB_Scalar_extractElement_FP64(&current_error, scalar_error);
+        *iters = i;
         if (current_error < tol) {
-            *iters = i;
             break;
         }
 

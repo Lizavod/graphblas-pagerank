@@ -11,10 +11,15 @@ if(NOT CMAKE_BUILD_TYPE)
 endif()
 
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wextra -Wpedantic")
-set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -g -O0 -fsanitize=address -fsanitize=undefined -fsanitize=leak")
-set(CMAKE_EXE_LINKER_FLAGS_DEBUG "${CMAKE_EXE_LINKER_FLAGS_DEBUG} -fsanitize=address -fsanitize=undefined -fsanitize=leak")
+set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -g -O0 -fsanitize=address -fsanitize=undefined")
+set(CMAKE_EXE_LINKER_FLAGS_DEBUG "${CMAKE_EXE_LINKER_FLAGS_DEBUG} -fsanitize=address -fsanitize=undefined")
 
 set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -O3")
+
+option(BUILD_BENCHMARKS "Build benchmark executables" OFF)
+if(BUILD_BENCHMARKS)
+    find_package(LAGraph REQUIRED)
+endif()
 
 find_package(GraphBLAS REQUIRED)
 find_package(cmocka REQUIRED)
@@ -23,6 +28,10 @@ enable_testing()
 
 add_subdirectory(src)
 add_subdirectory(tests)
+
+if(BUILD_BENCHMARKS)
+    add_subdirectory(benchmarks)
+endif()
 
 install(FILES 
     include/pagerank.h

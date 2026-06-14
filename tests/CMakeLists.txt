@@ -22,10 +22,3 @@ foreach(test_name ${TEST_NAMES})
 endforeach()
 
 file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/data DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
-
-set_tests_properties(tests_pagerank PROPERTIES 
-    ENVIRONMENT "LSAN_OPTIONS=suppressions=${CMAKE_SOURCE_DIR}/lsan.supp:detect_leaks=1"
-)
-set_tests_properties(tests_reader PROPERTIES 
-    ENVIRONMENT "LSAN_OPTIONS=suppressions=${CMAKE_SOURCE_DIR}/lsan.supp:detect_leaks=1"
-)
