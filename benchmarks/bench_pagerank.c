@@ -63,6 +63,8 @@ int run_experiment(const char *graph, int num_iterations)
         fclose(la_results);
         return 1;
     }
+    LAGraph_Cached_AT(G, msg);
+    LAGraph_Cached_OutDegree(G, msg);
 
     pagerank(&my_pr, &iters, G->A, damping, tol, num_iterations);
     LAGr_PageRank(&la_pr, &iters, G, damping, tol, num_iterations, msg);
@@ -98,19 +100,11 @@ int run_experiment(const char *graph, int num_iterations)
     }
 
     for (int i = 0; i < NUM_MEASUREMENTS; i++) {
-        GrB_Matrix A_temp;
-        GrB_Matrix_dup(&A_temp, G->A);
-        LAGraph_Graph G_temp;
-        LAGraph_New(&G_temp, &A_temp, LAGraph_ADJACENCY_DIRECTED, msg);
-
         double t1 = LAGraph_WallClockTime();
-        LAGr_PageRank(&la_pr, &iters, G_temp, damping, tol, num_iterations,
-                      msg);
+        LAGr_PageRank(&la_pr, &iters, G, damping, tol, num_iterations, msg);
         double t2 = LAGraph_WallClockTime();
-
         fprintf(la_results, "%10.6f\n", t2 - t1);
         GrB_Vector_free(&la_pr);
-        LAGraph_Free((void **)&G_temp, msg);
     }
 
     fclose(my_results);

@@ -57,37 +57,12 @@ def analyze_measurements(times):
         'mean': mean,
         'std': std,
         'rel_std_pct': rel_std,
-        'ci': ci,
-        'n': n
+        'ci': ci
     }
 
 def format_ci(mean, ci):
     return f"{mean:.6f} ± {ci:.6f}"
 
-def write_table(results, output_file):
-    with open(output_file, 'w') as f:
-        f.write("┌────────────┬──────────┬──────────┬─────────┬─────────┬────────────────┐\n")
-        f.write("│ Graph          │ Impl        │ Mean (s)    │ Std (s)    │ RSD (%)   │ 95% CI              │\n")
-        f.write("├────────────┼──────────┼──────────┼─────────┼─────────┼────────────────┤\n")
-        
-        for r in results:
-            analysis = r['analysis']
-            graph = r['graph']
-            impl = r['impl'].replace('_pagerank', '')
-            
-            mean_str = f"{analysis['mean']:.6f}"
-            std_str = f"{analysis['std']:.6f}"
-            rsd_str = f"{analysis['rel_std_pct']:.2f}"
-            ci_str = format_ci(analysis['mean'], analysis['ci'])
-            
-            if len(graph) > 14:
-                graph = graph[:11] + "..."
-            if len(impl) > 11:
-                impl = impl[:8] + "..."
-            
-            f.write(f"│ {graph:<14} │ {impl:<11} │ {mean_str:>10} │ {std_str:>10} │ {rsd_str:>10} │ {ci_str:>16} │\n")
-        
-        f.write("└────────────┴──────────┴──────────┴─────────┴─────────┴────────────────┘\n")
 
 def write_csv(results, output_file):
     table_data = []
@@ -104,8 +79,7 @@ def write_csv(results, output_file):
             'mean_time': round(analysis['mean'], 6),
             'std_dev': round(analysis['std'], 6),
             'rsd_percent': round(analysis['rel_std_pct'], 2),
-            'ci_95': round(analysis['ci'], 6),
-            'n_measurements': analysis['n']
+            'ci_95': round(analysis['ci'], 6)
         })
     
     df = pd.DataFrame(table_data)
@@ -128,13 +102,12 @@ def main():
     for r in results:
         r['analysis'] = analyze_measurements(r['times'])
     
-    txt_file = os.path.join(script_dir, "summary.txt")
+
     csv_file = os.path.join(script_dir, "summary.csv")
     
-    write_table(results, txt_file)
     write_csv(results, csv_file)
     
-    print(f"Table saved to: {txt_file}")
+
     print(f"CSV saved to: {csv_file}")
 
 if __name__ == "__main__":

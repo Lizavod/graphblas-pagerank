@@ -14,8 +14,8 @@ int main()
 
     benchmark_config_t configs[] = {{"web-Stanford", 200},
                                     {"web-Google", 100},
-                                    {"hollywood-2009", 30},
-                                    {"indochina-2004", 15},
+                                    {"hollywood-2009", 50},
+                                    {"indochina-2004", 25},
                                     {NULL, 0}};
 
     for (int i = 0; configs[i].graph; i++) {
