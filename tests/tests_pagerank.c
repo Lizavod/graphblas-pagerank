@@ -148,7 +148,7 @@ static void test_equal_to_expected(void **state)
     double diff =
         max_difference(current_test_data->pr, current_test_data->expected,
                        current_test_data->vector_size);
-    assert_true(diff < 0.25);
+    assert_true(diff < 0.1);
 }
 
 int main(void)

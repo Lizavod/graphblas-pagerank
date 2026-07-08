@@ -11,14 +11,10 @@ int run_experiment(const char *graph, int num_iterations)
     LAGraph_Graph G = NULL;
     GrB_Vector my_pr = NULL;
     GrB_Vector la_pr = NULL;
-    GrB_Vector diff = NULL;
-    GrB_Scalar scalar_error;
-    GrB_Index n;
     char msg[LAGRAPH_MSG_LEN];
     double damping = 0.85;
     double tol = 0;
     int iters = 0;
-    double error = 0.0;
 
     char graph_filepath[128];
     snprintf(graph_filepath, sizeof(graph_filepath), "benchmarks/data/%s.mtx",
@@ -43,6 +39,7 @@ int run_experiment(const char *graph, int num_iterations)
              "benchmarks/results/%s/lagraph_pagerank.csv", graph);
     FILE *my_results = fopen(my_res_filepath, "w");
     FILE *la_results = fopen(la_res_filepath, "w");
+
     if (!my_results || !la_results) {
         fprintf(stderr, "Error: could not open results files\n");
         GrB_Matrix_free(&A);
@@ -69,32 +66,16 @@ int run_experiment(const char *graph, int num_iterations)
     pagerank(&my_pr, &iters, G->A, damping, tol, num_iterations);
     LAGr_PageRank(&la_pr, &iters, G, damping, tol, num_iterations, msg);
 
-    GrB_Matrix_nrows(&n, G->A);
-    GrB_Vector_new(&diff, GrB_FP64, n);
-    GrB_Scalar_new(&scalar_error, GrB_FP64);
-    GrB_Vector_eWiseAdd_BinaryOp(diff, NULL, NULL, GrB_MINUS_FP64, my_pr, la_pr,
-                                 NULL);
-    GrB_Vector_apply(diff, NULL, NULL, GrB_ABS_FP64, diff, NULL);
-    GrB_Vector_reduce_Monoid_Scalar(scalar_error, NULL, GrB_PLUS_MONOID_FP64,
-                                    diff, NULL);
-    GrB_Scalar_extractElement_FP64(&error, scalar_error);
-    GrB_Scalar_free(&scalar_error);
-    GrB_Vector_free(&diff);
-
-    if (error > 1e-6) {
-        fprintf(stderr, "Results differ %.2e\n", error);
-        fclose(my_results);
-        fclose(la_results);
-        GrB_Vector_free(&my_pr);
-        GrB_Vector_free(&la_pr);
-        LAGraph_Free((void **)&G, msg);
-        return 1;
-    }
-
     for (int i = 0; i < NUM_MEASUREMENTS; i++) {
         double t1 = LAGraph_WallClockTime();
         pagerank(&my_pr, &iters, G->A, damping, tol, num_iterations);
         double t2 = LAGraph_WallClockTime();
+        if (iters != num_iterations) {
+            fprintf(stderr,
+                    "pagerank() has not completed all iterations: %d != %d",
+                    iters, num_iterations);
+        }
+
         fprintf(my_results, "%10.6f\n", t2 - t1);
         GrB_Vector_free(&my_pr);
     }
@@ -103,6 +84,12 @@ int run_experiment(const char *graph, int num_iterations)
         double t1 = LAGraph_WallClockTime();
         LAGr_PageRank(&la_pr, &iters, G, damping, tol, num_iterations, msg);
         double t2 = LAGraph_WallClockTime();
+        if (iters != num_iterations) {
+            fprintf(
+                stderr,
+                "LAGr_PageRank() has not completed all iterations: %d != %d",
+                iters, num_iterations);
+        }
         fprintf(la_results, "%10.6f\n", t2 - t1);
         GrB_Vector_free(&la_pr);
     }

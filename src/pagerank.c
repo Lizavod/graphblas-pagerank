@@ -101,7 +101,7 @@ GrB_Info pagerank(GrB_Vector *pagerank_scores, int *iters, const GrB_Matrix A,
     GrB_Scalar_free(&scalar_zero);
     GrB_Scalar_free(&scalar_one);
 
-    for (int i = 0; i < max_iters; i++) {
+    for (int i = 1; i <= max_iters; i++) {
         GrB_Vector_assign(dangling_scores, is_dangling, NULL, *pagerank_scores,
                           GrB_ALL, num_nodes, NULL);
 

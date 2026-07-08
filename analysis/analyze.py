@@ -6,9 +6,10 @@ from scipy import stats
 
 ITERATIONS = {
     "web-Stanford": 200,
-    "web-Google": 100,
-    "hollywood-2009": 30,
-    "indochina-2004": 15,
+    "web-Google": 200,
+    "hollywood-2009": 50,
+    "mycielskian17": 50,
+    "indochina-2004": 35,
 }
 
 def get_results_dir():
