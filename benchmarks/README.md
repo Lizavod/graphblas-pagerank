@@ -6,7 +6,7 @@
 mkdir -p benchmarks/{data,results/{hollywood-2009,indochina-2004,mycielskian17,web-Google,web-Stanford}}
 ```
 
-## Загрузите следующие матрицы в формате Matrix Market и поместите их в каталог "benchmarks/data/"
+## Загрузите следующие матрицы в формате Matrix Market и поместите их в директорию "benchmarks/data/"
 
 * [web-Google](https://suitesparse-collection-website.herokuapp.com/SNAP/web-Google)
 * [web-Stanford](https://suitesparse-collection-website.herokuapp.com/SNAP/web-Stanford)
