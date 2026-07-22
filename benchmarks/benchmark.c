@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: Apache-2.0
+// SPDX-FileCopyrightText: 2026 Vodolazskaya Elizaveta
+
 #include "bench_pagerank.h"
 #include <GraphBLAS.h>
 #include <LAGraph.h>
