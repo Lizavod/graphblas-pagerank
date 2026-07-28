@@ -53,7 +53,24 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y --no-install-recommends libsuitesparse-dev libgraphblas-dev libcmocka-dev clang-tidy
+          sudo apt-get install -y --no-install-recommends libsuitesparse-dev libcmocka-dev clang-tidy
+          
+      - name: Build and install GraphBLAS
+        run: |
+          if [ -f "/usr/local/lib/libgraphblas.so" ]; then
+            echo "GraphBLAS already installed"
+          elif [ -d "GraphBLAS" ] && [ -f "GraphBLAS/Makefile" ]; then
+            cd GraphBLAS
+            make -j$(nproc)
+            sudo make install
+            sudo ldconfig
+          else
+            git clone --depth 1 https://github.com/DrTimothyAldenDavis/GraphBLAS.git
+            cd GraphBLAS
+            make -j$(nproc)
+            sudo make install
+            sudo ldconfig
+          fi
       
       - name: Configure Debug
         run: |
