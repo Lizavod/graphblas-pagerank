@@ -54,7 +54,7 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y --no-install-recommends libsuitesparse-dev libcmocka-dev clang-tidy
-      
+          
       - name: Build and install GraphBLAS
         run: |
           if [ -f "/usr/local/lib/libgraphblas.so" ]; then
@@ -71,7 +71,7 @@ jobs:
             sudo make install
             sudo ldconfig
           fi
-
+      
       - name: Configure Debug
         run: |
           mkdir -p build-debug

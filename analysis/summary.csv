@@ -1,0 +1,11 @@
+Graph,Implementation,Iterations,Mean Time (seconds),Std Dev (seconds),RSD (%),95% CI (seconds)
+hollywood-2009,lagraph,50,1.178225,0.114582,9.72,0.042786
+hollywood-2009,my,50,6.951339,0.398684,5.74,0.148871
+indochina-2004,lagraph,35,2.645123,0.306376,11.58,0.114403
+indochina-2004,my,35,13.533707,0.35785,2.64,0.133624
+mycielskian17,lagraph,50,1.003705,0.03648,3.63,0.013622
+mycielskian17,my,50,3.210598,0.07127,2.22,0.026613
+web-Google,lagraph,200,2.938143,0.298878,10.17,0.111603
+web-Google,my,200,4.988768,0.176967,3.55,0.066081
+web-Stanford,lagraph,200,2.299309,0.118702,5.16,0.044324
+web-Stanford,my,200,3.524651,0.119352,3.39,0.044567

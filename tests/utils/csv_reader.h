@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-FileCopyrightText: 2026 Vodolazskaya Elizaveta
 
-#ifndef MTX_READER_H
-#define MTX_READER_H
+#ifndef CSV_READER_H
+#define CSV_READER_H
 
 #include <GraphBLAS.h>
 
