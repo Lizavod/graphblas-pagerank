@@ -192,14 +192,14 @@ def main():
     print(f"CSV saved to: {csv_file}")
 
     fig1, ax1 = plot_performance_comparison(df)
-    fig1.savefig(os.path.join(script_dir, "performance_comparison.png"), dpi=300, bbox_inches='tight')
+    fig1.savefig(os.path.join(script_dir, "performance_comparison.pdf"), dpi=300, bbox_inches='tight')
     plt.close(fig1)
-    print(f"  - Saved: performance_comparison.png")
+    print(f"  - Saved: performance_comparison.pdf")
 
     fig2, ax2 = plot_stability_dashboard(df)
-    fig2.savefig(os.path.join(script_dir, "stability.png"), dpi=300, bbox_inches='tight')
+    fig2.savefig(os.path.join(script_dir, "stability.pdf"), dpi=300, bbox_inches='tight')
     plt.close(fig2)
-    print(f"  - Saved: stability_ci.png")
+    print(f"  - Saved: stability_ci.pdf")
 
 if __name__ == "__main__":
     main()
